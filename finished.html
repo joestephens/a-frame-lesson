@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>A-FRAME Lesson</title>
+    <script src="https://aframe.io/releases/0.5.0/aframe.min.js"></script>
+    <script src="aframe-mario-star-component.min.js"></script>
+</head>
+<body>
+    <a-scene>
+        <a-assets>
+            <img src="/assets/brick.png" id="brick" />
+            <img src="/assets/stone.png" id="stone" />
+            <img src="/assets/wood.png" id="wood" />
+            <img src="/assets/sponge.png" id="sponge" />
+            <img src="/assets/grass.png" id="grass" />
+            <a-asset-item src="/assets/obj_tree1.obj" id="tree-obj"></a-asset-item>
+            <a-asset-item src="/assets/obj_tree1.mtl" id="tree-mtl"></a-asset-item>
+        </a-assets>
+        <a-sky color="#81d9ef"></a-sky>
+        <a-plane color="#84bb63" src="#grass" material="repeat: 20 20" height="20" width="20" rotation="-90 45 0"></a-plane>
+        <a-box color="#8b7045" width="1" height="1" depth="1" rotation="0 45 0" position="0 0.5 -10" src="#brick">
+            <a-animation attribute="rotation" repeat="indefinite" to="0 315 0"></a-animation>
+        </a-box>
+        <a-box width="1" height="1" depth="1" rotation="0 45 0" position="2 0.5 4" mario-star="waitTicks: 4"></a-box>
+        <a-obj-model src="#tree-obj" mtl="#tree-mtl" scale="0.5 0.5 0.5" position="-5 0.5 -5" rotation="0 45 0"></a-obj-model>
+        <a-camera wasd-controls-enabled="false" position="0 3 0"></a-camera>
+    </a-scene>
+
+    <script type="text/javascript">
+        function Block(position, type) {
+            this.position = position
+
+            this.box = document.createElement('a-box')
+
+            this.box.setAttribute('position', this.position)
+            this.box.setAttribute('src', '#' + type)
+            this.box.setAttribute('width', '1')
+            this.box.setAttribute('height', '1')
+            this.box.setAttribute('depth', '1')
+            this.box.setAttribute('color', '#8b7045')
+            this.box.setAttribute('rotation', {
+                x: 0,
+                y: 45,
+                z: 0
+            })      
+
+            this.sceneElement = document.querySelector('a-scene')
+            this.sceneElement.appendChild(this.box)
+        }
+
+        Block.prototype = {
+            moveLeft: function () {
+                this.position.x -= 0.7
+                this.box.setAttribute('position', this.position)
+            },
+            moveRight: function () {
+                this.position.x += 0.7
+                this.box.setAttribute('position', this.position)
+            },
+            moveUp: function () {
+                this.position.z -= 0.7
+                this.box.setAttribute('position', this.position)
+            },
+            moveDown: function () {
+                this.position.z += 0.7
+                this.box.setAttribute('position', this.position)
+            },
+            setY: function (y) {
+                this.position.y = y
+                this.box.setAttribute('position', this.position)
+            },
+            setType: function (type) {
+                this.box.setAttribute('src', '#' + type)
+            },
+            move: function (axis, amount) {
+                this.position[axis] += amount
+                this.box.setAttribute('position', this.position)
+            } 
+        }
+
+        window.onload = function loaded () {
+            var position = {
+                x: 0, 
+                y: 0.5, 
+                z: 0
+            }
+
+            var blockTypes = ['brick', 'stone', 'wood', 'sponge']
+            var lastType = 0
+            var currentType = lastType
+
+            var block = new Block(position, blockTypes[currentType])
+            var currentBlock = block
+
+            document.onkeydown = function move (event) {
+                if (event.keyCode == '38') {
+                    // up arrow
+                    currentBlock.move('z', -0.7)
+                }
+                if (event.keyCode == '40') {
+                    // down arrow
+                    currentBlock.move('z', 0.7)
+                }
+                if (event.keyCode == '37') {
+                    // left arrow
+                    currentBlock.move('x', -0.7)
+                }
+                if (event.keyCode == '39') {
+                    // right arrow
+                    currentBlock.move('x', 0.7)
+                }
+                if (event.keyCode == '13') {
+                    // enter key
+                    currentBlock = new Block(position, blockTypes[currentType])
+                }
+                if (event.keyCode >= 49 && event.keyCode <= 53) {
+                    // number key between 1 and 5 - change our layer
+                    currentBlock.setY(event.keyCode - 48.5)
+                }
+                if (event.keyCode == '32') {
+                    // spacebar - toggle our bricks
+                    currentType += 1
+                    if (currentType >= blockTypes.length) {
+                        currentType = 0
+                    }
+                    currentBlock.setType(blockTypes[currentType])
+                }
+            }
+        }
+    </script>
+</body>
+</html>
